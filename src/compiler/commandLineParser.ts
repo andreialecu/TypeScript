@@ -2372,8 +2372,17 @@ namespace ts {
                             createCompilerDiagnosticOnlyIfJson(Diagnostics.Compiler_option_0_requires_a_value_of_type_1, "reference.path", "string");
                         }
                         else {
+                            let absolutePath = getNormalizedAbsolutePath(ref.path, basePath);
+                            // @ts-ignore
+                            if (process.versions.pnp) {
+                                try {
+                                    absolutePath = require("pnpapi").resolveToUnqualified(require(`${absolutePath}/package.json`).name, `${basePath}/`);
+                                } catch {
+                                    // do nothing
+                                }
+                            }
                             (projectReferences || (projectReferences = [])).push({
-                                path: getNormalizedAbsolutePath(ref.path, basePath),
+                                path: absolutePath,
                                 originalPath: ref.path,
                                 prepend: ref.prepend,
                                 circular: ref.circular
